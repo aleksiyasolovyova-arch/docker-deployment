@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Coral+Pixels&family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+body {
+    background: #1b1b2f;
+    color: #f0e6f6;
+    font-family: 'Tinos', serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    min-height: 100vh;
+}
+
+#tarot-container {
+    margin-bottom: 2rem;
+    width: 300px;
+    padding: 1.5rem;
+    border: 2px solid #8e44ad;
+    border-radius: 12px;
+    background: rgba(142, 68, 173, 0.2);
+    box-shadow: 0 0 15px 3px #8e44ad;
+    text-align: center;
+}
+
+.tarot-card .card-title {
+    font-family: 'Coral Pixels', cursive;
+    font-size: 2.8rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: #ffffff;
+    color: #1b1b2f;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.tarot-card .card-meaning {
+    font-family: 'Tinos', serif;
+    font-size: 1.8rem;
+    font-style: italic;
+    line-height: 1.4;
+}
+
+#generate-btn {
+    padding: 0.8rem 2rem;
+    background: #8e44ad;
+    border: none;
+    border-radius: 25px;
+    color: #f0e6f6;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 0 10px 0 #8e44ad;
+    transition: background 0.3s ease;
+    font-family: 'Tinos', serif;
+}
+
+#generate-btn:hover {
+    background: #732d91;
+}
+
+
+
