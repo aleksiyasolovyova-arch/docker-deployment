@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   db:
@@ -8,9 +7,11 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5436:5432"
+      - "5437:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - as_network
 
   app:
     build:
@@ -20,9 +21,24 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5436/tarot
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/tarot
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+    networks:
+      - as_network
+
+# what needs to happen:
+
+# 1. init nginx
+# 2. put default config file
+# reload nginx
+# 3. certificates
+# 4. put a config file for nginx with https config
+# 5. reload nginx
+#
 
 volumes:
   postgres_data:
+networks:
+  as_network:
+    name: as_network
