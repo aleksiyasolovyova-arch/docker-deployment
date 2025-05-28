@@ -1,0 +1,55 @@
+upstream as-tarot {
+    server as_tarot:8080;
+}
+upstream as-tarot1 {
+    server as_tarot1:8080;
+}
+
+server {
+    listen 80;
+    server_name $SERV_ADDR;
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name $SERV_ADDR;
+
+    ssl_certificate /etc/letsencrypt/live/as-tarot.duckdns.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/as-tarot.duckdns.org/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+    ssl_ciphers "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH";
+    ssl_ecdh_curve secp384r1;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 10m;
+    ssl_stapling on;
+    ssl_stapling_verify on;
+    add_header Strict-Transport-Security "max-age=63072000; includeSubdomains; preload";
+    add_header X-Frame-Options DENY;
+    add_header X-Content-Type-Options nosniff;
+
+    location /  {
+        return 301 https://$host/tarot1/;
+    }
+
+    location /tarot1/ {
+        proxy_pass http://as-tarot/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /tarot2/ {
+        proxy_pass http://as-tarot1/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+}

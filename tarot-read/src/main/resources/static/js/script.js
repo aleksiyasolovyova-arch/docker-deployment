@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML = '';  // clear previous card
 
         try {
-            const res = await fetch('/api/tarot');
+            const res = await fetch('api/tarot');
             const card = await res.json();
 
             const cardEl = document.createElement('div');

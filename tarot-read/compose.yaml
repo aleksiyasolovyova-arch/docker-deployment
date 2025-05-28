@@ -1,11 +1,25 @@
 
 services:
-  db:
+  as_duckdns:
+    image: alpine/curl
+    command: curl -v https://www.duckdns.org/update?domains=${SUBDOMAIN}\&token=${TOKEN}\ip=${IPWEB}
+
+  as_certduck:
+    build:
+      context: ./as_duckcert/
+      dockerfile: Dockerfile
+    volumes:
+      - ./nginx/certbot/conf:/etc/letsencrypt
+    depends_on:
+      as_duckdns:
+        condition: service_completed_successfully
+    command: certonly --non-interactive --agree-tos --email aleksiya.solovyova@student.kdg.be --preferred-challenges dns --authenticator dns-duckdns --dns-duckdns-token "$TOKEN" -d "$SUBDOMAIN.duckdns.org"
+  as_db:
     image: postgres:15
     environment:
-      POSTGRES_DB: tarot
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${TAROT_DB}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
     ports:
       - "5437:5432"
     volumes:
@@ -13,29 +27,58 @@ services:
     networks:
       - as_network
 
-  app:
-    build:
-      context: .
+  as_tarot:
+    build: .
     depends_on:
-      - db
+      as_db:
+        condition: service_started
+      as_certduck:
+          condition: service_completed_successfully
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/tarot
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://as_db:5432/${TAROT_DB}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASS}
     networks:
       - as_network
 
-# what needs to happen:
+  as_tarot1:
+    build: .
+    depends_on:
+      as_db:
+        condition: service_started
+      as_certduck:
+        condition: service_completed_successfully
+    ports:
+      - "8081:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://as_db:5432/${TAROT_DB}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASS}
+    networks:
+      - as_network
 
-# 1. init nginx
-# 2. put default config file
-# reload nginx
-# 3. certificates
-# 4. put a config file for nginx with https config
-# 5. reload nginx
-#
+  as_nginx:
+    image: nginx:latest
+    container_name: as_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf:/etc/nginx/templates
+      - ./nginx/certbot/conf:/etc/letsencrypt
+    environment:
+      - SERV_ADDR=${SUBDOMAIN}.duckdns.org
+    networks:
+      - as_network
+    depends_on:
+        as_certduck:
+          condition: service_completed_successfully
+        as_tarot:
+          condition: service_started
+        as_tarot1:
+          condition: service_started
 
 volumes:
   postgres_data:
